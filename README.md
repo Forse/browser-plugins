@@ -1,2 +1,3 @@
 # browser-plugins
-Browser plugins
+Browser plugins.
+
