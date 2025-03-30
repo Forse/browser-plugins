@@ -1,7 +1,10 @@
 # Ideer
 
-Her kan man skrive ideer til plugins, hvis du tar tak i en idè så skriv det opp
+Her kan man skrive ideer til plugins og hvem som jobber med dem, 
+- Hvis du finner på en ny ide: skriv opp
+- Hvis du tar tak i en idè så skriv det opp
 
+## ideer
 - fjern alle reklamer fra VG
 - De-Trump-ify the web (fjern alle paragrafer fra nettaviser som har med trump å gjøre)
 - Lag en notisblokk/scratchpad som huskes i nettleser (localstorage) for det domenet du står på nå
