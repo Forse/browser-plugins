@@ -27,6 +27,7 @@ function waitForElement(timeout = 30000, interval = 100) {
     });
 }
 
+const kibanaUrl = ""
 const observer = new MutationObserver(() => {
     waitForElement()
         .then(idLabel => {
@@ -41,7 +42,7 @@ const observer = new MutationObserver(() => {
                 const idValue = idLabel.nextSibling.textContent
 
                 window.open(
-                    `http://10.0.10.70:5601/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-3d,to:now))&_a=(columns:!(RequestPath,request.user,response.status),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:b39f59d0-fe38-11ea-a9fd-dfd757f05def,key:event.action,negate:!f,params:(query:ApiRequest),type:phrase),query:(match_phrase:(event.action:ApiRequest))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:b39f59d0-fe38-11ea-a9fd-dfd757f05def,key:request.headers.x-deviceid,negate:!f,params:(query:'${idValue}'),type:phrase),query:(match_phrase:(request.headers.x-deviceid:'${idValue}')))),index:b39f59d0-fe38-11ea-a9fd-dfd757f05def,interval:auto,query:(language:kuery,query:''),sort:!(!(Timestamp,desc)))`
+                    `${kibanaUrl}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-3d,to:now))&_a=(columns:!(RequestPath,request.user,response.status),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:b39f59d0-fe38-11ea-a9fd-dfd757f05def,key:event.action,negate:!f,params:(query:ApiRequest),type:phrase),query:(match_phrase:(event.action:ApiRequest))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:b39f59d0-fe38-11ea-a9fd-dfd757f05def,key:request.headers.x-deviceid,negate:!f,params:(query:'${idValue}'),type:phrase),query:(match_phrase:(request.headers.x-deviceid:'${idValue}')))),index:b39f59d0-fe38-11ea-a9fd-dfd757f05def,interval:auto,query:(language:kuery,query:''),sort:!(!(Timestamp,desc)))`
                 )
             }
 
