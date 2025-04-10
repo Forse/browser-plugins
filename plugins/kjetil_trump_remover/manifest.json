@@ -5,8 +5,18 @@
     "manifest_version": 3,
     "action": {
       "default_popup": "content.html",
-      "default_icon": "images/trump128.jpg"
+      "default_icon": {
+        "16": "images/trump16.jpg",
+        "48": "images/trump48.jpg",
+        "128": "images/trump128.jpg"
+        }
     },
+    "icons": {
+        "16": "images/trump16.jpg",
+        "48": "images/trump48.jpg",
+        "128": "images/trump128.jpg"
+    },
+
     "content_scripts": [
         {
           "matches": ["http://*/*", "https://*/*"],
