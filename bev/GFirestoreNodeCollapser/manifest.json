@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "GFirestoreNodeCollapser",
+  "version": "1.0",
+
+  "description": "Collapses all document nodes in Google Cloud Console for Firestore.",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "GFirestoreNodeCollapser_bvi@forse.no"
+    }
+  },
+
+  "icons": {
+    "16": "icon.svg"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://console.cloud.google.com/firestore/*"],
+      "js": ["collapse.js"]
+    }
+  ]
+}
+  
