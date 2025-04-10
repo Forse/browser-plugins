@@ -16,6 +16,19 @@ document.body.appendChild(overlay);
 // Establish a persistent connection to the background.
 const port = chrome.runtime.connect({ name: "content" });
 
+function formatDuration(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    let parts = [];
+    if (hours > 0) parts.push(hours + "h");
+    if (minutes > 0 || hours > 0) parts.push(minutes + "m");
+    parts.push(secs + "s");
+
+    return parts.join(" ");
+}
+
 // Listen for update messages from the background.
 port.onMessage.addListener((msg) => {
     if (msg.action === "updateVisitLog" && msg.visitLog) {
@@ -24,7 +37,7 @@ port.onMessage.addListener((msg) => {
         const currentUrl = location.href;
         if (msg.visitLog[currentUrl]) {
             const seconds = msg.visitLog[currentUrl].duration;
-            overlay.textContent = "Time on page: " + seconds + " s";
+            overlay.textContent = "Time on page: " + formatDuration(seconds);
         }
     }
 });

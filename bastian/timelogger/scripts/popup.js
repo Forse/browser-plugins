@@ -11,6 +11,19 @@ port.onMessage.addListener((msg) => {
     }
 });
 
+function formatDuration(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    let parts = [];
+    if (hours > 0) parts.push(hours + "h");
+    if (minutes > 0 || hours > 0) parts.push(minutes + "m");
+    parts.push(secs + "s");
+
+    return parts.join(" ");
+}
+
 /**
  * Groups the flat visitLog (keyed by full URL) by domain.
  * For each domain, it calculates the total time and breakdown by path.
@@ -74,7 +87,8 @@ function renderVisitLog(groupedLog) {
 
         // Domain header: include the domain and total time.
         const header = document.createElement("h2");
-        header.textContent = domain + " - Total time: " + entry.total + " s";
+        header.textContent =
+            domain + " - Total time: " + formatDuration(entry.total);
         domainDiv.appendChild(header);
 
         // Create a table for the breakdown by page.
@@ -102,7 +116,7 @@ function renderVisitLog(groupedLog) {
                 tdPath.appendChild(a);
 
                 const tdTime = document.createElement("td");
-                tdTime.textContent = pages[path] + " s";
+                tdTime.textContent = formatDuration(pages[path]);
 
                 tr.appendChild(tdPath);
                 tr.appendChild(tdTime);
