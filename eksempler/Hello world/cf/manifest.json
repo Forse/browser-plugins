@@ -3,13 +3,14 @@
     "description": "Min første utvidelse dadada",
     "version": "1.0",
     "manifest_version": 3,
-    "action": {
-        "default_popup": "hello.html",
-        "default_icon": "icon.png"
-    },
-    "browser_specific_settings": {
-        "gecko": {
-            "id": "cf@forse.no"
+    "content_scripts": [
+        {
+            "js": [
+                "script.js"
+            ],
+            "matches": [
+                "https://gitlab.com/ruter-as/rapp/android/ruter-android-app/-/merge_requests/*"
+            ]
         }
-    }
+    ]
 }
