@@ -1,0 +1,17 @@
+{
+    "name": "Trump Remover",
+    "description": "Will automatically remover paragraphs from web pages related to Donald Trump",
+    "version": "1.0",
+    "manifest_version": 3,
+    "action": {
+      "default_popup": "content.html",
+      "default_icon": "images/trump128.jpg"
+    },
+    "content_scripts": [
+        {
+          "matches": ["http://*/*", "https://*/*"],
+          "js": ["script/jquery-3.7.1.min.js","script/content.js"]
+        }
+    ]
+  }
+  

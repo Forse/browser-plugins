@@ -42,7 +42,23 @@ function replaceWith(headerElement, newText) {
 
 function injectFetchDetailsLink(anchor, headerElement, articleUrl) {
     const span = document.createElement("span")
-    span.textContent = "BYTT"
+    span.textContent = "HENT"
+    span.style.margin = "6px";
+    span.style.padding = "2px";
+    span.style.border = "1px solid #ccc";
+    span.style.borderRadius = "4px";
+    span.style.cursor = "pointer";
+    span.style.textAlign = "center";
+    span.style.width = "80px";
+    span.style.transition = "background-color 0.2s ease";
+
+    // Optional: hover effect
+    span.addEventListener("mouseenter", () => {
+        span.style.backgroundColor = "#f0f0f0";
+    });
+    span.addEventListener("mouseleave", () => {
+        span.style.backgroundColor = "#f7f7f7";
+    });
     span.onclick = () => { 
         console.log("FRO hei du")
         replaceFromArticle(headerElement, articleUrl)
