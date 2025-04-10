@@ -1,19 +1,19 @@
 {
   "manifest_version": 3,
   "name": "bev_helloworld",
-  "version": "1.0",
-
   "description": "Hello.",
-
+  "version": "1.0",
+  "action": {
+    "default_title": "hold secrets for use with openapi"
+  },
   "browser_specific_settings": {
     "gecko": {
       "id": "benjamin@forse.no"
     }
   },
-
   "content_scripts": [
     {
-      "matches": ["https://*"],
+      "matches": ["<all_urls>"],
       "js": ["hello.js"]
     }
   ]

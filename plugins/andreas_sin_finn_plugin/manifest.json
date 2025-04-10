@@ -1,0 +1,12 @@
+{
+    "manifest_version": 3,
+    "name": "Finn bedre ting",
+    "version": "1.0.0",
+    "description": "FINN without specials",
+    "content_scripts": [
+        {
+          "matches": ["https://www.finn.no/*"],
+          "js": ["jquery.js","content.js"]
+        }
+    ]
+  }
