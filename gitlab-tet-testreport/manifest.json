@@ -1,0 +1,19 @@
+{
+    "name": "Gitlab Test Report enhancer 2000",
+    "description": "Copyright TET 2025",
+    "version": "1.0",
+    "manifest_version": 3,
+    "action": {
+      "default_popup": "hello.html",
+      "default_icon": "icon.png"
+    },
+    "content_scripts": [
+      {
+        "matches": [
+          "https://gitlab.com/ruter-as/rutersalg/android/*"
+        ],
+        
+        "js": ["scripts/jquery.js", "scripts/display-report-links.js"]
+      }
+    ]
+  }
