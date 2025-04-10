@@ -1,6 +1,6 @@
 {
-    "name": "Hallo utvidelser",
-    "description": "Min første utvidelse dadada",
+    "name": "No Squash",
+    "description": "Extension som forhindrer squashing av commits til/fra main",
     "version": "1.0",
     "manifest_version": 3,
     "content_scripts": [

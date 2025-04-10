@@ -1,0 +1,19 @@
+{
+    "name": "Kibana UserId button",
+    "description": "Extensions om åpner opp kibana for en gitt bruker id fra Firebase",
+    "version": "1.0",
+    "manifest_version": 3,
+    "content_scripts": [
+        {
+            "js": [
+                "script.js"
+            ],
+            "matches": [
+                "https://console.firebase.google.com/u/*/project/svippr-itest/crashlytics/app/*/issues/*",
+                "https://console.firebase.google.com/u/*/project/svippr-atest/crashlytics/app/*/issues/*",
+                "https://console.firebase.google.com/u/*/project/svippr-staging/crashlytics/app/*/issues/*",
+                "https://console.firebase.google.com/u/*/project/itf-apps/crashlytics/app/*/issues/*"
+            ]
+        }
+    ]
+}
