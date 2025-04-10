@@ -5,8 +5,17 @@ collapseButton.id = 'collapseButton';
 collapseButton.textContent = 'Collapse All Nodes';
 
 // Style the button if needed
-collapseButton.style.padding = '8px';
-collapseButton.style.marginBottom = '20px';
+collapseButton.style.padding = '6px 12px'; // Matches typical button padding
+collapseButton.style.marginLeft = '10px'; // Space it from the project switcher
+collapseButton.style.backgroundColor = '#f1f3f4'; // Light gray background
+collapseButton.style.border = '1px solid #dadce0'; // Subtle border
+collapseButton.style.borderRadius = '4px'; // Rounded corners
+collapseButton.style.color = '#202124'; // Dark text for contrast
+collapseButton.style.fontFamily = 'Google Sans, Roboto, Arial, sans-serif'; // Match typography
+collapseButton.style.fontSize = '14px'; // Standard size
+collapseButton.style.cursor = 'pointer';
+collapseButton.style.display = 'inline-flex'; // Aligns better with inline elements
+collapseButton.style.alignItems = 'center'; // Vertically centers text
 
 // Function to collapse nodes recursively
 function collapseAllNodes() {
@@ -29,9 +38,25 @@ function collapseAllNodes() {
 
 collapseButton.addEventListener('click', collapseAllNodes);
 
-const body = document.body;
-if (body) {
-    body.insertBefore(collapseButton, body.firstChild);
-} else {
-    console.error('Body element not found.');
+function tryInsertButton() {
+    const projectSwitcher = document
+        .querySelector('pcc-platform-bar-purview-switcher.pcc-purview-switcher-container')
+        .parentNode
+        .parentNode;
+
+    if (projectSwitcher && !document.getElementById('collapseButton')) {
+        projectSwitcher.insertAdjacentElement('afterend', collapseButton);
+        observer.disconnect(); // Stop observing once inserted
+    }
 }
+
+// Set up MutationObserver to watch for DOM changes
+const observer = new MutationObserver((mutations) => {
+    tryInsertButton();
+});
+
+// Start observing the document body for added nodes
+observer.observe(document.body, { childList: true, subtree: true });
+
+// Try immediately in case it’s already loaded
+tryInsertButton();

@@ -1,0 +1,17 @@
+{
+    "name": "Hello world testing",
+    "version": "1.0",
+    "manifest_version": 3,
+    "description": "Base Level Extension",
+    "action": {
+      "default_popup": "hello.html",
+      "default_icon": "hello_extensions.png"
+    },
+    "content_scripts": [
+        {
+          "matches": ["http://*/*", "https://*/*"],
+          "js": ["popup.js"]
+        }
+    ]
+  }
+  

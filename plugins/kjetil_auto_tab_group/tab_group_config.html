@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto Tab Grouper</title>
+    <style>
+        body { font-family: sans-serif; width: 300px; padding: 10px; }
+        label, input, button { display: block; margin-bottom: 8px; width: 95%; }
+        input[type="text"] { padding: 5px; }
+        button { padding: 8px; cursor: pointer; }
+        #rulesList { margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px; max-height: 150px; overflow-y: auto;}
+        .rule-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #eee; font-size: 0.9em;}
+        .rule-item span { flex-grow: 1; margin-right: 10px; word-break: break-all; }
+        .delete-button { background-color: #ffdddd; border: 1px solid #ffaaaa; color: #d8000c; cursor: pointer; padding: 2px 5px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <h3>Add New Grouping Rule</h3>
+
+    <label for="urlPattern">URL Pattern (Regex):</label>
+    <input type="text" id="urlPattern" placeholder="e.g., github\.com\/.*\/pulls">
+
+    <label for="groupName">Group Name:</label>
+    <input type="text" id="groupName" placeholder="e.g., GitHub PRs" list="existingGroups">
+    <datalist id="existingGroups">
+        </datalist>
+
+    <button id="saveButton">Add Rule</button>
+
+    <div id="rulesList">
+        <h4>Current Rules</h4>
+        </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
