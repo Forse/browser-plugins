@@ -8,7 +8,7 @@ const rulesListDiv = document.getElementById('rulesList');
 
 // Load existing rules from storage and display them
 async function loadAndDisplayRules() {
-    const result = await chrome.storage.local.get(['groupRules']);
+    const result = await chrome.storage.sync.get(['groupRules']);
     const rules = result.groupRules || [];
     rulesListDiv.innerHTML = '<h4>Current Rules</h4>'; // Clear previous list
 
@@ -70,7 +70,7 @@ async function handleSaveRule() {
     }
 
 
-    const result = await chrome.storage.local.get(['groupRules']);
+    const result = await chrome.storage.sync.get(['groupRules']);
     const rules = result.groupRules || [];
 
     // Prevent duplicate rules (same pattern and group name)
@@ -81,7 +81,7 @@ async function handleSaveRule() {
 
     rules.push({ pattern: pattern, groupName: groupName });
 
-    await chrome.storage.local.set({ groupRules: rules });
+    await chrome.storage.sync.set({ groupRules: rules });
     alert('Rule saved successfully!');
     urlPatternInput.value = ''; // Clear inputs
     groupNameInput.value = '';
@@ -92,12 +92,12 @@ async function handleSaveRule() {
 // Handle deleting a rule
 async function handleDeleteRule(event) {
     const indexToDelete = parseInt(event.target.getAttribute('data-index'), 10);
-    const result = await chrome.storage.local.get(['groupRules']);
+    const result = await chrome.storage.sync.get(['groupRules']);
     let rules = result.groupRules || [];
 
     if (indexToDelete >= 0 && indexToDelete < rules.length) {
         rules.splice(indexToDelete, 1); // Remove the rule at the specified index
-        await chrome.storage.local.set({ groupRules: rules });
+        await chrome.storage.sync.set({ groupRules: rules });
         alert('Rule deleted.');
         await loadAndDisplayRules(); // Refresh the list
     }

@@ -2,7 +2,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     // Check if the tab loading is complete and it has a URL
     if (changeInfo.status === 'complete' && tab.url) {
       try {
-        const result = await chrome.storage.local.get(['groupRules']);
+        const result = await chrome.storage.sync.get(['groupRules']);
         const rules = result.groupRules || [];
   
         // Find the *first* matching rule
