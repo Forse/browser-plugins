@@ -1,54 +1,77 @@
-// Format seconds into a human-readable string.
-function formatDuration(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-
-    let parts = [];
-    if (hours > 0) parts.push(hours + "h");
-    if (minutes > 0 || hours > 0) parts.push(minutes + "m");
-    parts.push(secs + "s");
-
-    return parts.join(" ");
-}
-
-// Render the visit log into an HTML table.
-function renderVisitLog(visitLog) {
-    const tbody = document.querySelector("#logTable tbody");
-    tbody.innerHTML = ""; // Clear any existing rows
-
-    // For each entry in the visit log, create a table row.
-    for (const key in visitLog) {
-        if (visitLog.hasOwnProperty(key)) {
-            const entry = visitLog[key];
-            const tr = document.createElement("tr");
-
-            const tdUrl = document.createElement("td");
-            tdUrl.textContent = entry.url;
-
-            const tdTime = document.createElement("td");
-            tdTime.textContent = formatDuration(entry.duration);
-
-            tr.appendChild(tdUrl);
-            tr.appendChild(tdTime);
-            tbody.appendChild(tr);
-        }
-    }
-}
-
-// Establish a long-lived connection (port) to the background script.
+// Establish a persistent connection to the background.
 const port = chrome.runtime.connect();
 
-// Listen for messages from the background service worker.
+// Listen for update messages from the background.
 port.onMessage.addListener((msg) => {
     if (msg.action === "updateVisitLog") {
-        console.log("Received live update:", msg.visitLog);
+        console.log("Received update:", msg);
         renderVisitLog(msg.visitLog);
     }
 });
 
-// Optional: Initial waiting message.
+// Renders the entire visit log grouped by domain.
+function renderVisitLog(visitLog) {
+    const container = document.getElementById("visitLogContainer");
+    container.innerHTML = ""; // Clear previous content
+
+    const domains = Object.keys(visitLog);
+    if (domains.length === 0) {
+        container.innerHTML = "<p>No visit log data available yet.</p>";
+        return;
+    }
+
+    domains.forEach((domain) => {
+        const entry = visitLog[domain]; // { domain, total, pages }
+
+        // Create a container div for this domain.
+        const domainDiv = document.createElement("div");
+        domainDiv.className = "domain-section";
+
+        // Create a header showing the domain and its total time.
+        const header = document.createElement("h2");
+        header.textContent = domain + " - Total time: " + entry.total + " s";
+        domainDiv.appendChild(header);
+
+        // Create a table for the breakdown by page.
+        const table = document.createElement("table");
+
+        // Table header
+        const thead = document.createElement("thead");
+        thead.innerHTML = "<tr><th>Page Path</th><th>Time (s)</th></tr>";
+        table.appendChild(thead);
+
+        // Table body
+        const tbody = document.createElement("tbody");
+        const pages = entry.pages;
+        if (pages) {
+            Object.keys(pages).forEach((path) => {
+                const tr = document.createElement("tr");
+                const tdPath = document.createElement("td");
+                tdPath.textContent = path;
+                const tdTime = document.createElement("td");
+                tdTime.textContent = pages[path] + " s";
+                tr.appendChild(tdPath);
+                tr.appendChild(tdTime);
+                tbody.appendChild(tr);
+            });
+        } else {
+            // In case there are no pages recorded for this domain
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 2;
+            td.textContent = "No page data available.";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+
+        domainDiv.appendChild(table);
+        container.appendChild(domainDiv);
+    });
+}
+
+// Optional: show a waiting message until data arrives.
 document.addEventListener("DOMContentLoaded", () => {
-    const tbody = document.querySelector("#logTable tbody");
-    tbody.innerHTML = '<tr><td colspan="2">Waiting for data...</td></tr>';
+    const container = document.getElementById("visitLogContainer");
+    container.innerHTML = "<p>Waiting for data...</p>";
 });

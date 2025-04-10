@@ -2,18 +2,19 @@
 // We store basic info: tabId and url.
 let activeTabInfo = null;
 
-// Global log for total active time per URL (in seconds).
+// Global log for total active time grouped by domain.
+// Structure: {
+//   <domain>: {
+//     domain: <domain>,
+//     total: <seconds>,
+//     pages: { <pathname>: <seconds>, ... }
+//   },
+//   ...
+// }
 const visitLog = {};
 
 // Connected popup ports for live updates.
 const ports = [];
-
-/**
- * Log extra debug info for vg.no.
- */
-function debugLogForVG(message, data) {
-    console.log("[DEBUG vg.no]", message, data);
-}
 
 /**
  * Starts (or switches) the active session for a given tab.
@@ -27,17 +28,41 @@ function startSession(tab) {
 }
 
 /**
+ * Parses a URL string into its domain (hostname) and path (pathname).
+ */
+function parseUrl(urlStr) {
+    try {
+        const urlObj = new URL(urlStr);
+        return {
+            domain: urlObj.hostname, // e.g., "example.com"
+            path: urlObj.pathname, // e.g., "/page1"
+        };
+    } catch (error) {
+        console.error("Invalid URL:", urlStr, error);
+        return { domain: urlStr, path: "" };
+    }
+}
+
+/**
  * Called every second to update the visit log.
- * If a tab is active, increment its duration by 1 (representing 1 second).
+ * If a tab is active, increment its duration by 1 second,
+ * grouped by domain and then by path.
  */
 function pushUpdate() {
     if (activeTabInfo) {
-        const key = activeTabInfo.url;
-        if (!visitLog[key]) {
-            visitLog[key] = { url: key, duration: 0 };
+        const { domain, path } = parseUrl(activeTabInfo.url);
+
+        // Initialize domain entry if missing.
+        if (!visitLog[domain]) {
+            visitLog[domain] = { domain: domain, total: 0, pages: {} };
         }
-        // Increment by 1 second.
-        visitLog[key].duration += 1;
+        // Initialize page entry if missing.
+        if (!visitLog[domain].pages[path]) {
+            visitLog[domain].pages[path] = 0;
+        }
+        // Increment both the domain total and the page-specific counter.
+        visitLog[domain].total += 1;
+        visitLog[domain].pages[path] += 1;
     }
 
     // Send the updated visitLog to all connected popups.
@@ -109,7 +134,7 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
     }
 });
 
-// Every second, push an update that increments the visited time by 1.
+// Every second, push an update that increments the visited time by 1 second.
 setInterval(() => {
     pushUpdate();
 }, 1000);
