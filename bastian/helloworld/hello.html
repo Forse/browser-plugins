@@ -3,10 +3,39 @@
     <head>
         <meta charset="UTF-8" />
         <title>Tab Visit Log</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                margin: 10px;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            th,
+            td {
+                border: 1px solid #ccc;
+                padding: 6px;
+                text-align: left;
+            }
+            th {
+                background-color: #f0f0f0;
+            }
+        </style>
     </head>
     <body>
         <h1>Tab Visit Log</h1>
-        <div id="log"></div>
+        <table id="logTable">
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>Time Spent</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be inserted here by popup.js -->
+            </tbody>
+        </table>
         <script src="scripts/popup.js"></script>
     </body>
 </html>

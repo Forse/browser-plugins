@@ -1,44 +1,45 @@
-// popup.js
-
-// Helper function to convert milliseconds into a human-readable string.
-function formatDuration(ms) {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+// Format seconds into a human-readable string.
+function formatDuration(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
 
     let parts = [];
-    if (hours > 0) {
-        parts.push(hours + "h");
-    }
-    if (minutes > 0 || hours > 0) {
-        parts.push(minutes + "m");
-    }
-    parts.push(seconds + "s");
+    if (hours > 0) parts.push(hours + "h");
+    if (minutes > 0 || hours > 0) parts.push(minutes + "m");
+    parts.push(secs + "s");
 
     return parts.join(" ");
 }
 
-// Render the visit log data in the popup.
+// Render the visit log into an HTML table.
 function renderVisitLog(visitLog) {
-    const logDiv = document.getElementById("log");
-    logDiv.innerHTML = ""; // Clear previous content
+    const tbody = document.querySelector("#logTable tbody");
+    tbody.innerHTML = ""; // Clear any existing rows
 
-    for (const url in visitLog) {
-        if (visitLog.hasOwnProperty(url)) {
-            const entry = visitLog[url];
-            const formattedTime = formatDuration(entry.duration);
-            const p = document.createElement("p");
-            p.textContent = `URL: ${entry.url} | Total Time: ${formattedTime}`;
-            logDiv.appendChild(p);
+    // For each entry in the visit log, create a table row.
+    for (const key in visitLog) {
+        if (visitLog.hasOwnProperty(key)) {
+            const entry = visitLog[key];
+            const tr = document.createElement("tr");
+
+            const tdUrl = document.createElement("td");
+            tdUrl.textContent = entry.url;
+
+            const tdTime = document.createElement("td");
+            tdTime.textContent = formatDuration(entry.duration);
+
+            tr.appendChild(tdUrl);
+            tr.appendChild(tdTime);
+            tbody.appendChild(tr);
         }
     }
 }
 
-// Set up a long-lived connection (port) to the background script.
+// Establish a long-lived connection (port) to the background script.
 const port = chrome.runtime.connect();
 
-// Listen for live updates from the background script.
+// Listen for messages from the background service worker.
 port.onMessage.addListener((msg) => {
     if (msg.action === "updateVisitLog") {
         console.log("Received live update:", msg.visitLog);
@@ -46,7 +47,8 @@ port.onMessage.addListener((msg) => {
     }
 });
 
-// Optional: Display a waiting message until data is received.
+// Optional: Initial waiting message.
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("log").textContent = "Waiting for data...";
+    const tbody = document.querySelector("#logTable tbody");
+    tbody.innerHTML = '<tr><td colspan="2">Waiting for data...</td></tr>';
 });
