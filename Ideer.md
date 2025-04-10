@@ -16,5 +16,4 @@ Her kan man skrive ideer til plugins og hvem som jobber med dem,
 - svarteliste alle "boostede" annonser på finn
 - fyll ut en hel uke i tripletex med bare ett klikk
 - automatisk redirect til ...&w=1 på github PR reviews for å ignorere whitespace i PR'er
-
-
+- Automatisk gruppering av tab'er i chrome basert på url pattern
