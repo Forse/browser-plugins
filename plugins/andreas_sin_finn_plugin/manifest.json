@@ -6,7 +6,7 @@
     "content_scripts": [
         {
           "matches": ["https://www.finn.no/*"],
-          "js": ["jquery.js","content.js"]
+          "js": ["jquery.js","mod_finn.js"]
         }
     ]
   }
