@@ -1,33 +1,78 @@
 // Establish a persistent connection to the background.
-const port = chrome.runtime.connect();
+const port = chrome.runtime.connect({ name: "popup" });
 
 // Listen for update messages from the background.
 port.onMessage.addListener((msg) => {
-    if (msg.action === "updateVisitLog") {
+    if (msg.action === "updateVisitLog" && msg.visitLog) {
         console.log("Received update:", msg);
-        renderVisitLog(msg.visitLog);
+        // Group the data by domain.
+        const groupedLog = groupVisitLog(msg.visitLog);
+        renderVisitLog(groupedLog);
     }
 });
 
-// Renders the entire visit log grouped by domain.
-function renderVisitLog(visitLog) {
+/**
+ * Groups the flat visitLog (keyed by full URL) by domain.
+ * For each domain, it calculates the total time and breakdown by path.
+ * Example output:
+ * {
+ *   "example.com": {
+ *     domain: "example.com",
+ *     total: 120,
+ *     pages: {
+ *       "/": 60,
+ *       "/news": 30,
+ *       "/about": 30
+ *     }
+ *   },
+ *   "another.com": { ... }
+ * }
+ */
+function groupVisitLog(flatLog) {
+    const grouped = {};
+    Object.keys(flatLog).forEach((fullUrl) => {
+        try {
+            const urlObj = new URL(fullUrl);
+            const domain = urlObj.hostname;
+            const path = urlObj.pathname;
+            const time = flatLog[fullUrl].duration;
+
+            if (!grouped[domain]) {
+                grouped[domain] = { domain: domain, total: 0, pages: {} };
+            }
+            grouped[domain].total += time;
+            if (!grouped[domain].pages[path]) {
+                grouped[domain].pages[path] = 0;
+            }
+            grouped[domain].pages[path] += time;
+        } catch (error) {
+            console.error("Error parsing URL:", fullUrl, error);
+        }
+    });
+    return grouped;
+}
+
+/**
+ * Renders the grouped visit log into HTML.
+ */
+function renderVisitLog(groupedLog) {
     const container = document.getElementById("visitLogContainer");
     container.innerHTML = ""; // Clear previous content
 
-    const domains = Object.keys(visitLog);
+    const domains = Object.keys(groupedLog);
     if (domains.length === 0) {
         container.innerHTML = "<p>No visit log data available yet.</p>";
         return;
     }
 
     domains.forEach((domain) => {
-        const entry = visitLog[domain]; // { domain, total, pages }
+        const entry = groupedLog[domain]; // { domain, total, pages }
 
-        // Create a container div for this domain.
+        // Create a section for this domain.
         const domainDiv = document.createElement("div");
         domainDiv.className = "domain-section";
 
-        // Create a header showing the domain and its total time.
+        // Domain header: include the domain and total time.
         const header = document.createElement("h2");
         header.textContent = domain + " - Total time: " + entry.total + " s";
         domainDiv.appendChild(header);
@@ -47,12 +92,12 @@ function renderVisitLog(visitLog) {
             Object.keys(pages).forEach((path) => {
                 const tr = document.createElement("tr");
 
+                // Create a cell with an anchor link.
                 const tdPath = document.createElement("td");
-                // Create an anchor that opens the URL.
                 const a = document.createElement("a");
-                // We assume https by default – change this if needed.
+                // Here we assume HTTPS; adjust if needed.
                 a.href = "https://" + domain + path;
-                a.target = "_blank"; // Opens in a new tab
+                a.target = "_blank";
                 a.textContent = path;
                 tdPath.appendChild(a);
 
@@ -64,7 +109,6 @@ function renderVisitLog(visitLog) {
                 tbody.appendChild(tr);
             });
         } else {
-            // In case there are no pages recorded for this domain
             const tr = document.createElement("tr");
             const td = document.createElement("td");
             td.colSpan = 2;
@@ -79,7 +123,7 @@ function renderVisitLog(visitLog) {
     });
 }
 
-// Optional: show a waiting message until data arrives.
+// Optional: display a waiting message until data arrives.
 document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("visitLogContainer");
     container.innerHTML = "<p>Waiting for data...</p>";

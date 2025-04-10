@@ -1,19 +1,13 @@
+// background.js
+
 // Global state for the currently active tab.
 // We store basic info: tabId and url.
 let activeTabInfo = null;
 
-// Global log for total active time grouped by domain.
-// Structure: {
-//   <domain>: {
-//     domain: <domain>,
-//     total: <seconds>,
-//     pages: { <pathname>: <seconds>, ... }
-//   },
-//   ...
-// }
+// Global log for total active time per URL (in seconds).
 const visitLog = {};
 
-// Connected popup ports for live updates.
+// Connected popup/content script ports for live updates.
 const ports = [];
 
 /**
@@ -28,54 +22,29 @@ function startSession(tab) {
 }
 
 /**
- * Parses a URL string into its domain (hostname) and path (pathname).
- */
-function parseUrl(urlStr) {
-    try {
-        const urlObj = new URL(urlStr);
-        return {
-            domain: urlObj.hostname, // e.g., "example.com"
-            path: urlObj.pathname, // e.g., "/page1"
-        };
-    } catch (error) {
-        console.error("Invalid URL:", urlStr, error);
-        return { domain: urlStr, path: "" };
-    }
-}
-
-/**
  * Called every second to update the visit log.
- * If a tab is active, increment its duration by 1 second,
- * grouped by domain and then by path.
+ * If a tab is active, increment its duration by 1 second.
  */
 function pushUpdate() {
     if (activeTabInfo) {
-        const { domain, path } = parseUrl(activeTabInfo.url);
-
-        // Initialize domain entry if missing.
-        if (!visitLog[domain]) {
-            visitLog[domain] = { domain: domain, total: 0, pages: {} };
+        const key = activeTabInfo.url;
+        if (!visitLog[key]) {
+            visitLog[key] = { url: key, duration: 0 };
         }
-        // Initialize page entry if missing.
-        if (!visitLog[domain].pages[path]) {
-            visitLog[domain].pages[path] = 0;
-        }
-        // Increment both the domain total and the page-specific counter.
-        visitLog[domain].total += 1;
-        visitLog[domain].pages[path] += 1;
+        // Increment by 1 second.
+        visitLog[key].duration += 1;
     }
-
-    // Send the updated visitLog to all connected popups.
+    // Send the updated visitLog to all connected ports.
     ports.forEach((port) => {
         port.postMessage({ action: "updateVisitLog", visitLog: visitLog });
     });
 }
 
 /**
- * Listen for popup connections via port messaging.
+ * Listen for popup or content script connections via port messaging.
  */
 chrome.runtime.onConnect.addListener((port) => {
-    console.log("Popup connected via port");
+    console.log("Port connected:", port.name);
     ports.push(port);
     port.onDisconnect.addListener(() => {
         const index = ports.indexOf(port);

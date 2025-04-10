@@ -10,10 +10,11 @@
     "content_scripts": [
         {
             "js": ["scripts/content.js"],
-            "matches": ["https://*/*", "http://*/*"]
+            "matches": ["https://*/*", "http://*/*"],
+            "run_at": "document_end"
         }
     ],
-    "permissions": ["tabs"],
+    "permissions": ["tabs", "activeTab"],
     "background": {
         "service_worker": "scripts/service-worker.js"
     }
