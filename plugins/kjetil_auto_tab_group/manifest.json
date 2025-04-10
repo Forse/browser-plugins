@@ -1,0 +1,20 @@
+{
+  "name": "Auto Tab Group",
+  "description": "Make Tabs Great Again",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "tabGroups"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "tab_group_config.html",
+    "default_icon": "icon.png"
+  }
+}
+
