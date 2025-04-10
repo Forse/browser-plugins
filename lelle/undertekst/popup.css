@@ -1,0 +1,19 @@
+body {
+    padding: 1em;
+    min-width: 300px;
+}
+
+ul {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    padding-bottom: 1em;
+    border-bottom: 1px solid lightgray;
+    cursor: pointer;
+}
+

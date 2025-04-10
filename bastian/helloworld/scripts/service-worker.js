@@ -1,60 +1,82 @@
-// background.js (service worker)
+// Global state for the currently active tab.
+// We store basic info: tabId and url.
+let activeTabInfo = null;
 
-// Global state for the active tab's session
-let activeTabInfo = null; // { tabId, url, startTime }
-const visitLog = {}; // Logs total active duration by URL, e.g., { "http://example.com": { url: "http://example.com", duration: 12345 } }
-const ports = []; // Connected ports from popups
+// Global log for total active time grouped by domain.
+// Structure: {
+//   <domain>: {
+//     domain: <domain>,
+//     total: <seconds>,
+//     pages: { <pathname>: <seconds>, ... }
+//   },
+//   ...
+// }
+const visitLog = {};
+
+// Connected popup ports for live updates.
+const ports = [];
 
 /**
- * Record the active time for the current active tab session and clear it.
+ * Starts (or switches) the active session for a given tab.
  */
-function recordTime() {
-    if (activeTabInfo && activeTabInfo.startTime) {
-        const now = Date.now();
-        const duration = now - activeTabInfo.startTime;
-        const key = activeTabInfo.url;
-        console.log(`Recording ${duration}ms for ${key}`);
-        if (!visitLog[key]) {
-            visitLog[key] = { url: key, duration: 0 };
-        }
-        visitLog[key].duration += duration;
-        // Clear the active session; a new one will start when the tab is re-activated.
-        activeTabInfo = null;
+function startSession(tab) {
+    activeTabInfo = {
+        tabId: tab.id,
+        url: tab.url,
+    };
+    console.log("Started session for tab:", activeTabInfo);
+}
+
+/**
+ * Parses a URL string into its domain (hostname) and path (pathname).
+ */
+function parseUrl(urlStr) {
+    try {
+        const urlObj = new URL(urlStr);
+        return {
+            domain: urlObj.hostname, // e.g., "example.com"
+            path: urlObj.pathname, // e.g., "/page1"
+        };
+    } catch (error) {
+        console.error("Invalid URL:", urlStr, error);
+        return { domain: urlStr, path: "" };
     }
 }
 
 /**
- * Push an update to all connected popup ports.
- * The update includes the visit log plus the current active session's live duration.
+ * Called every second to update the visit log.
+ * If a tab is active, increment its duration by 1 second,
+ * grouped by domain and then by path.
  */
 function pushUpdate() {
-    // Make a shallow copy of visitLog.
-    const currentLog = Object.assign({}, visitLog);
-    // If there's an active session, add the live (extra) time since startTime.
-    if (activeTabInfo && activeTabInfo.startTime) {
-        const key = activeTabInfo.url;
-        const extraDuration = Date.now() - activeTabInfo.startTime;
-        if (!currentLog[key]) {
-            currentLog[key] = { url: key, duration: extraDuration };
-        } else {
-            currentLog[key].duration += extraDuration;
+    if (activeTabInfo) {
+        const { domain, path } = parseUrl(activeTabInfo.url);
+
+        // Initialize domain entry if missing.
+        if (!visitLog[domain]) {
+            visitLog[domain] = { domain: domain, total: 0, pages: {} };
         }
+        // Initialize page entry if missing.
+        if (!visitLog[domain].pages[path]) {
+            visitLog[domain].pages[path] = 0;
+        }
+        // Increment both the domain total and the page-specific counter.
+        visitLog[domain].total += 1;
+        visitLog[domain].pages[path] += 1;
     }
-    console.log("Pushing update to ports:", currentLog);
+
+    // Send the updated visitLog to all connected popups.
     ports.forEach((port) => {
-        port.postMessage({ action: "updateVisitLog", visitLog: currentLog });
+        port.postMessage({ action: "updateVisitLog", visitLog: visitLog });
     });
 }
 
 /**
- * Listen for connections from the popup.
- * Each connected port is stored and later used to push updates.
+ * Listen for popup connections via port messaging.
  */
 chrome.runtime.onConnect.addListener((port) => {
     console.log("Popup connected via port");
     ports.push(port);
-
-    // Clean up when the popup disconnects.
     port.onDisconnect.addListener(() => {
         const index = ports.indexOf(port);
         if (index !== -1) {
@@ -64,92 +86,55 @@ chrome.runtime.onConnect.addListener((port) => {
 });
 
 /**
- * Listen for active tab changes.
- * When a new tab becomes active, record time for the previous one, and start a new session.
+ * Update activeTabInfo when a tab is activated.
  */
 chrome.tabs.onActivated.addListener((activeInfo) => {
-    console.log("onActivated fired:", activeInfo);
-    recordTime();
+    console.log("onActivated event:", activeInfo);
     chrome.tabs.get(activeInfo.tabId, (tab) => {
         if (tab && tab.url) {
-            activeTabInfo = {
-                tabId: tab.id,
-                url: tab.url,
-                startTime: Date.now(),
-            };
-            console.log("New activeTabInfo from onActivated:", activeTabInfo);
-            pushUpdate();
+            startSession(tab);
         }
     });
 });
 
 /**
- * Listen for window focus changes.
- * This catches when the user moves focus out of (or back to) a window.
+ * Update activeTabInfo when window focus changes.
  */
 chrome.windows.onFocusChanged.addListener((windowId) => {
-    console.log("onFocusChanged fired:", windowId);
+    console.log("onFocusChanged event:", windowId);
     if (windowId === chrome.windows.WINDOW_ID_NONE) {
-        console.log("No window is focused, recording time.");
-        recordTime();
-        pushUpdate();
+        console.log("No window is focused.");
+        activeTabInfo = null;
     } else {
         chrome.tabs.query({ active: true, windowId: windowId }, (tabs) => {
             if (tabs && tabs.length > 0) {
-                console.log("Active tab from focused window:", tabs[0]);
-                // End the previous session (if any) before starting a new one.
-                recordTime();
-                activeTabInfo = {
-                    tabId: tabs[0].id,
-                    url: tabs[0].url,
-                    startTime: Date.now(),
-                };
-                console.log(
-                    "Updated activeTabInfo after window focus change:",
-                    activeTabInfo
-                );
-                pushUpdate();
+                startSession(tabs[0]);
             }
         });
     }
 });
 
 /**
- * Listen for tab updates (e.g., URL changes).
- * When the URL of the active tab changes, record the previous session and start tracking the new URL.
+ * Update activeTabInfo when the active tab's URL changes.
  */
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.url && activeTabInfo && activeTabInfo.tabId === tabId) {
-        console.log(
-            `onUpdated fired for active tab ${tabId}, new URL: ${changeInfo.url}`
-        );
-        recordTime();
-        activeTabInfo = {
-            tabId: tab.id,
-            url: changeInfo.url,
-            startTime: Date.now(),
-        };
-        console.log("Updated activeTabInfo after URL change:", activeTabInfo);
-        pushUpdate();
+        console.log("onUpdated event for active tab:", tabId, changeInfo.url);
+        startSession(tab);
     }
 });
 
 /**
- * Optionally, listen for tab removal.
- * If the active tab is closed, record its time.
+ * Clear activeTabInfo when the active tab is closed.
  */
 chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
-    console.log("onRemoved fired for tab:", tabId);
+    console.log("onRemoved event for tab:", tabId);
     if (activeTabInfo && activeTabInfo.tabId === tabId) {
-        recordTime();
-        pushUpdate();
+        activeTabInfo = null;
     }
 });
 
-/**
- * Optional interval-based push update.
- * This ensures live updates even if no new events occur.
- */
+// Every second, push an update that increments the visited time by 1 second.
 setInterval(() => {
     pushUpdate();
 }, 1000);

@@ -2,11 +2,50 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>Tab Visit Log</title>
+        <title>Visit Log by Domain</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                margin: 10px;
+            }
+            h1 {
+                margin-bottom: 20px;
+            }
+            .domain-section {
+                margin-bottom: 30px;
+            }
+            .domain-section h2 {
+                margin-bottom: 10px;
+                font-size: 1.2em;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            th,
+            td {
+                border: 1px solid #ccc;
+                padding: 6px;
+                text-align: left;
+            }
+            th {
+                background-color: #f0f0f0;
+            }
+            a {
+                color: blue;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        </style>
     </head>
     <body>
-        <h1>Tab Visit Log</h1>
-        <div id="log"></div>
+        <h1>Visit Log by Domain</h1>
+        <div id="visitLogContainer">
+            <!-- Domain sections will be inserted here by popup.js -->
+        </div>
         <script src="scripts/popup.js"></script>
     </body>
 </html>

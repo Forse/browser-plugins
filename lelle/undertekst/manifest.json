@@ -1,0 +1,20 @@
+{
+  "name": "undertekster",
+  "version": "1.0",
+  "manifest_version": 3,
+  "description": "visualisering av undertekster i nettleseren",
+  "permissions": [
+    "scripting",
+    "activeTab"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "closed-caption-subtitles-icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.nrk.no/*"],
+      "js": ["content_script.js"]
+    }
+  ]
+}
