@@ -46,10 +46,19 @@ function renderVisitLog(visitLog) {
         if (pages) {
             Object.keys(pages).forEach((path) => {
                 const tr = document.createElement("tr");
+
                 const tdPath = document.createElement("td");
-                tdPath.textContent = path;
+                // Create an anchor that opens the URL.
+                const a = document.createElement("a");
+                // We assume https by default – change this if needed.
+                a.href = "https://" + domain + path;
+                a.target = "_blank"; // Opens in a new tab
+                a.textContent = path;
+                tdPath.appendChild(a);
+
                 const tdTime = document.createElement("td");
                 tdTime.textContent = pages[path] + " s";
+
                 tr.appendChild(tdPath);
                 tr.appendChild(tdTime);
                 tbody.appendChild(tr);
